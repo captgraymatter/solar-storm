@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Storms: The Grid Threat</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom Styles for Charts and Layout */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Max width for large screens */
+            height: 350px;
+            max-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Swing Animation Styles */
+        .swing-container {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            border-top: 4px solid #475569;
+            overflow: hidden;
+            background: #1e293b;
+            border-radius: 0.5rem;
+        }
+
+        .swing {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 150px;
+            background: #94a3b8;
+            transform-origin: top center;
+        }
+
+        .swing::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: -13px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #22d3ee; /* Cyan-400 */
+            box-shadow: 0 0 15px #22d3ee;
+        }
+
+        .swing-danger .swing::after {
+            background: #ef4444; /* Red-500 */
+            box-shadow: 0 0 15px #ef4444;
+        }
+
+        /* Animations */
+        @keyframes swingNormal {
+            0% { transform: translateX(-50%) rotate(25deg); }
+            50% { transform: translateX(-50%) rotate(-25deg); }
+            100% { transform: translateX(-50%) rotate(25deg); }
+        }
+
+        @keyframes swingJammed {
+            0% { transform: translateX(-50%) rotate(25deg); }
+            20% { transform: translateX(-50%) rotate(-45deg); } /* Pushed hard */
+            100% { transform: translateX(-50%) rotate(-45deg); } /* Stuck */
+        }
+
+        .animate-swing-normal {
+            animation: swingNormal 3s ease-in-out infinite;
+        }
+
+        .animate-swing-jammed {
+            animation: swingJammed 4s ease-out infinite;
+        }
+
+        .card {
+            background-color: #1e293b; /* Slate 800 */
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: #475569;
+        }
+    </style>
+    <!-- 
+    Palette: "Cyberpunk Oscilloscope"
+    - Background: Slate 900 (#0f172a)
+    - Card BG: Slate 800 (#1e293b)
+    - Primary Text: Slate 200 (#e2e8f0)
+    - Accent Safe: Cyan 400 (#22d3ee)
+    - Accent Danger: Red 500 (#ef4444)
+    - Muted: Slate 500 (#64748b)
+    
+    NO SVG USED. NO MERMAID JS USED.
+    -->
+</head>
+<body class="antialiased">
+
+    <!-- Navigation / Header -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-cyan-400 tracking-wider">GRID<span class="text-white">WATCH</span></h1>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#intro" class="hover:text-cyan-400 transition-colors">Overview</a>
+                <a href="#saturation" class="hover:text-red-400 transition-colors">The Jam</a>
+                <a href="#harmonics" class="hover:text-red-400 transition-colors">The Dirty Wave</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 space-y-16">
+
+        <!-- Intro Section -->
+        <section id="intro" class="text-center space-y-6">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">When Space Weather Hits Earth</h2>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                Transformers are the heart of our electrical grid. They are designed to "breathe" energy back and forth smoothly. 
+                But when a Solar Storm strikes, it injects a massive, one-way magnetic force that can lock the grid's heart in place.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <div class="card p-6 rounded-lg text-left border-l-4 border-cyan-400">
+                    <h3 class="text-xl font-bold text-white mb-2">Normal Operation</h3>
+                    <p class="text-slate-400">Electricity flows like a tide, moving back and forth (Alternating Current) 60 times a second.</p>
+                </div>
+                <div class="card p-6 rounded-lg text-left border-l-4 border-red-500">
+                    <h3 class="text-xl font-bold text-white mb-2">Solar Storm Impact</h3>
+                    <p class="text-slate-400">Geomagnetic current acts like a tsunami, pushing only one way (Direct Current), overwhelming the system.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Graphic 1: Half-Cycle Saturation (The Jam) -->
+        <section id="saturation" class="scroll-mt-24">
+            <div class="border-b border-slate-700 pb-4 mb-8">
+                <h2 class="text-3xl font-bold text-white mb-2">1. Half-Cycle Saturation <span class="text-red-500">(The Jam)</span></h2>
+                <p class="text-slate-400 text-lg">Visual Analogy: The Playground Swing</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Text Content -->
+                <div class="space-y-6">
+                    <p class="text-lg text-slate-300 leading-relaxed">
+                        Imagine a playground swing. Normally, it swings smoothly back and forth. This is your transformer on <strong>AC (Alternating Current)</strong>.
+                    </p>
+                    <p class="text-lg text-slate-300 leading-relaxed">
+                        Now, imagine someone grabs the swing, pulls it violently to the right, and holds it there. The swing can no longer move back. It is "saturated."
+                    </p>
+                    <p class="text-lg text-slate-300 leading-relaxed">
+                        A Solar Storm acts as that invisible hand. It injects <strong>Direct Current (DC)</strong> that locks the transformer's magnetic field in one direction, straining the entire system.
+                    </p>
+                </div>
+
+                <!-- Visuals Column -->
+                <div class="space-y-8">
+                    <!-- CSS Animation: The Metaphor -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-lg text-center">
+                            <h4 class="text-cyan-400 font-bold mb-4">Normal Flow</h4>
+                            <div class="swing-container">
+                                <div class="swing animate-swing-normal"></div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded-lg text-center">
+                            <h4 class="text-red-500 font-bold mb-4">The Jam (Saturation)</h4>
+                            <div class="swing-container swing-danger">
+                                <div class="swing animate-swing-jammed"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart: The Physics -->
+                    <div class="bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-700">
+                        <h4 class="text-white font-bold mb-2 text-center">Magnetic Flux: Normal vs. Saturated</h4>
+                        <div class="chart-container">
+                            <canvas id="saturationChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-2">The Red line shows the wave being "pushed" off-center, hitting the physical limit (Saturation).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Graphic 2: Harmonics (The Dirty Wave) -->
+        <section id="harmonics" class="scroll-mt-24">
+            <div class="border-b border-slate-700 pb-4 mb-8">
+                <h2 class="text-3xl font-bold text-white mb-2">2. Harmonics <span class="text-red-500">(The Dirty Wave)</span></h2>
+                <p class="text-slate-400 text-lg">Visual Analogy: Dirty Power</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Chart Column (Left on Desktop) -->
+                <div class="order-2 lg:order-1 bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-700">
+                    <h4 class="text-white font-bold mb-2 text-center">Oscilloscope Output</h4>
+                    <div class="chart-container">
+                        <canvas id="harmonicsChart"></canvas>
+                    </div>
+                    <div class="flex justify-center space-x-8 mt-4">
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 rounded-full bg-cyan-400 mr-2"></span>
+                            <span class="text-sm text-slate-300">Clean Power</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                            <span class="text-sm text-slate-300">Corrupted (Harmonics)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Content -->
+                <div class="order-1 lg:order-2 space-y-6">
+                    <p class="text-lg text-slate-300 leading-relaxed">
+                        When the transformer is "jammed," it stops behaving smoothly. Instead of a silent, flowing wave, it begins to stutter.
+                    </p>
+                    <p class="text-lg text-slate-300 leading-relaxed">
+                        This creates <strong>Harmonics</strong>—a "dirty wave." 
+                        Imagine trying to listen to a pure musical note, but it's replaced by a screeching, distorted noise.
+                    </p>
+                    <div class="bg-red-900/20 border border-red-900/50 p-6 rounded-lg">
+                        <h4 class="text-red-400 font-bold mb-2">The Downstream Impact</h4>
+                        <ul class="space-y-3 text-slate-300">
+                            <li class="flex items-start">
+                                <span class="text-red-500 mr-2">➤</span> 
+                                <strong>Vibration:</strong> Generators and turbines physically shake.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-red-500 mr-2">➤</span> 
+                                <strong>Overheating:</strong> Wires and cores melt from the chaotic energy.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-red-500 mr-2">➤</span> 
+                                <strong>Equipment Failure:</strong> Sensitive electronics fry instantly.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-8 text-center border border-slate-700">
+            <h2 class="text-2xl font-bold text-white mb-4">Why This Matters</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto mb-8">
+                Understanding these invisible forces is the first step in protecting our infrastructure. Engineers use this data to design "blockers" that can shield the grid from the sun's magnetic fury.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                <div class="p-4 bg-slate-900 rounded border border-cyan-900 text-cyan-400 font-bold">Monitor</div>
+                <div class="p-4 bg-slate-900 rounded border border-cyan-900 text-cyan-400 font-bold">Predict</div>
+                <div class="p-4 bg-slate-900 rounded border border-cyan-900 text-cyan-400 font-bold">Protect</div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-950 py-8 text-center text-slate-600 text-sm">
+        <p>&copy; 2023 Grid Resilience Visuals. Concept Demonstration.</p>
+    </footer>
+
+    <!-- Chart Logic -->
+    <script>
+        // --- Shared Configurations ---
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Roboto';
+        
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2000,
+                easing: 'easeOutQuart'
+            },
+            plugins: {
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleColor: '#fff',
+                    bodyColor: '#cbd5e1',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                                return label.join(' ');
+                            } else {
+                                return label;
+                            }
+                        }
+                    }
+                },
+                legend: {
+                    labels: {
+                        color: '#cbd5e1'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: '#334155' },
+                    ticks: { display: false } // Hide time steps for cleaner look
+                },
+                y: {
+                    grid: { color: '#334155' },
+                    suggestedMin: -2,
+                    suggestedMax: 2
+                }
+            }
+        };
+
+        // --- Chart 1: Saturation (The Jam) ---
+        const ctxSat = document.getElementById('saturationChart').getContext('2d');
+        
+        // Generate data for sine waves
+        const labels = [];
+        const dataNormal = [];
+        const dataSaturated = [];
+        
+        for (let i = 0; i <= 100; i++) {
+            labels.push(i);
+            const x = (i / 100) * 4 * Math.PI; // 2 cycles
+            
+            // Normal Sine Wave
+            dataNormal.push(Math.sin(x));
+            
+            // Saturated Wave: Add DC offset (1.0) and clip at limit (1.2)
+            // This simulates the core hitting magnetic saturation
+            let rawSaturated = Math.sin(x) + 0.8; 
+            // Hard clipping to simulate magnetic limit
+            let clipped = rawSaturated > 1.2 ? 1.2 : (rawSaturated < -1.2 ? -1.2 : rawSaturated);
+            dataSaturated.push(clipped);
+        }
+
+        new Chart(ctxSat, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Normal AC Flow (Blue Waves)',
+                        data: dataNormal,
+                        borderColor: '#22d3ee', // Cyan
+                        backgroundColor: 'rgba(34, 211, 238, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Saturated "Jammed" Flow (Red Arrow Effect)',
+                        data: dataSaturated,
+                        borderColor: '#ef4444', // Red
+                        borderWidth: 3,
+                        borderDash: [5, 5], // Dashed to indicate abnormal
+                        tension: 0.4,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    ...commonOptions.scales,
+                    y: {
+                        ...commonOptions.scales.y,
+                        title: {
+                            display: true,
+                            text: 'Magnetic Flux',
+                            color: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- Chart 2: Harmonics (The Dirty Wave) ---
+        const ctxHar = document.getElementById('harmonicsChart').getContext('2d');
+        
+        const dataClean = [];
+        const dataDirty = [];
+        
+        for (let i = 0; i <= 200; i++) {
+            const x = (i / 200) * 6 * Math.PI; // 3 cycles
+            
+            // Clean Wave
+            dataClean.push(Math.sin(x));
+            
+            // Dirty Wave: Fundamental + 3rd Harmonic + 5th Harmonic + Random Noise (Sparks)
+            let noise = (Math.random() - 0.5) * 0.2;
+            let dirty = Math.sin(x) + (0.3 * Math.sin(3 * x)) + (0.1 * Math.sin(5 * x)) + noise;
+            dataDirty.push(dirty);
+        }
+
+        new Chart(ctxHar, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 201}, (_, i) => i),
+                datasets: [
+                    {
+                        label: 'Clean Wave',
+                        data: dataClean,
+                        borderColor: 'rgba(34, 211, 238, 0.3)', // Faint Cyan
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Dirty Wave (Harmonics)',
+                        data: dataDirty,
+                        borderColor: '#ef4444', // Bright Red
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1, // Less tension for jagged look
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                ...commonOptions,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: { display: false },
+                    y: { display: false } // Hide Y axis for pure oscilloscope look
+                }
+            }
+        });
+    </script>
+</body>
+</html>
